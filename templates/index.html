@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <input type="text" id="username" placeholder="Username">
+    <input type="text" id="room" placeholder="Room">
+    <button onclick="joinRoom()">Join Room</button>
+    <div id="chat"></div>
+    <input type="text" id="message" placeholder="Message">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        function joinRoom() {
+            var username = $('#username').val();
+            var room = $('#room').val();
+            socket.emit('join', {'username': username, 'room': room});
+        }
+
+        function sendMessage() {
+            var message = $('#message').val();
+            var username = $('#username').val();
+            var room = $('#room').val();
+            socket.emit('send_message', {'username': username, 'room': room, 'message': message});
+        }
+
+        socket.on('user_joined', function(data) {
+            $('#chat').append('<p>' + data.username + ' has joined the room.</p>');
+        });
+
+        socket.on('user_left', function(data) {
+            $('#chat').append('<p>' + data.username + ' has left the room.</p>');
+        });
+
+        socket.on('receive_message', function(data) {
+            $('#chat').append('<p><b>' + data.username + ':</b> ' + data.message + '</p>');
+        });
+    </script>
+</body>
+</html>
